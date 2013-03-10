@@ -1,4 +1,8 @@
 class CitiesController < UIViewController
+
+  path = NSBundle.mainBundle.pathForResource("cidi_cities100", ofType:"json")
+  CITIES = BW::JSON.parse NSData.dataWithContentsOfFile(path)
+
   def viewDidLoad
     super
     self.title = "Cities"
@@ -10,12 +14,10 @@ class CitiesController < UIViewController
     @table.dataSource = self
     @table.delegate = self
 
-    @data = ["Paris", "London", "Barcelona"]
-
   end
 
   def tableView(tableView, numberOfRowsInSection:section)
-    @data.count
+    CITIES.count
   end
 
   def tableView(tableView, cellForRowAtIndexPath:indexPath)
@@ -28,13 +30,13 @@ class CitiesController < UIViewController
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator
 
     # put your data in the cell
-    cell.textLabel.text = @data[indexPath.row]
+    cell.textLabel.text = CITIES[indexPath.row][1]
     cell
   end
 
   def tableView(tableView, didSelectRowAtIndexPath:indexPath)
     tableView.deselectRowAtIndexPath(indexPath, animated:true)
-    city = @data[indexPath.row]
+    city = CITIES[indexPath.row][1]
 
     controller = UIViewController.alloc.initWithNibName(nil, bundle:nil)
     controller.view.backgroundColor = UIColor.whiteColor
