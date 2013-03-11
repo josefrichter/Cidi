@@ -14,10 +14,17 @@ class CitiesController < UIViewController
     @table.dataSource = self
     @table.delegate = self
 
+    search_bar = UISearchBar.alloc.initWithFrame([[0,0],[320,44]])
+    search_bar.delegate = self
+    @table.addSubview(search_bar)
+    #self.view.tableHeaderView = search_bar
+
+    @search_results = CITIES
+
   end
 
   def tableView(tableView, numberOfRowsInSection:section)
-    CITIES.count
+    @search_results.count
   end
 
   def tableView(tableView, cellForRowAtIndexPath:indexPath)
@@ -30,13 +37,13 @@ class CitiesController < UIViewController
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator
 
     # put your data in the cell
-    cell.textLabel.text = CITIES[indexPath.row][:name]
+    cell.textLabel.text = @search_results[indexPath.row][:name]
     cell
   end
 
   def tableView(tableView, didSelectRowAtIndexPath:indexPath)
     tableView.deselectRowAtIndexPath(indexPath, animated:true)
-    city = CITIES[indexPath.row][:name]
+    city = @search_results[indexPath.row][:name]
 
     controller = UIViewController.alloc.initWithNibName(nil, bundle:nil)
     controller.view.backgroundColor = UIColor.whiteColor
@@ -50,8 +57,8 @@ class CitiesController < UIViewController
 
     # docs: https://github.com/rubymotion/BubbleWrap/blob/master/motion/location/location.rb
     BW::Location.get do |result|
-      lat = CITIES[indexPath.row][:lat]
-      lon = CITIES[indexPath.row][:lon]
+      lat = @search_results[indexPath.row][:lat]
+      lon = @search_results[indexPath.row][:lon]
       cityloc = CLLocation.alloc.initWithLatitude(lat, longitude:lon)
       dist = result[:to].distanceFromLocation(cityloc) / 1000 #km
       @label.text = dist.round.to_s
@@ -60,6 +67,23 @@ class CitiesController < UIViewController
 
     controller.view.addSubview(@label)
     self.navigationController.pushViewController(controller, animated:true)
+  end
+
+  def searchBarSearchButtonClicked(search_bar)
+  #def searchBar(search_bar, textDidChange: searchText)
+    #@search_results.clear
+    searchText = search_bar.text
+    search_bar.resignFirstResponder
+    navigationItem.title = "search results for '#{searchText}'"
+    search_for(searchText)
+    search_bar.text = ""
+  end
+
+  def search_for(text)
+    @search_results = CITIES
+    @search_results = @search_results.select {|c| c[:name].to_s.downcase.include? text.downcase }
+    p @search_results.count
+    @table.reloadData
   end
 
 end
