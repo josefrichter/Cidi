@@ -9,6 +9,7 @@ class CitiesController < UITableViewController
 
     search_bar = UISearchBar.alloc.initWithFrame([[0,0],[320,44]])
     search_bar.delegate = self
+    search_bar.showsCancelButton = true
     view.addSubview(search_bar)
     view.tableHeaderView = search_bar
 
@@ -62,12 +63,18 @@ class CitiesController < UITableViewController
     self.navigationController.pushViewController(controller, animated:true)
   end
 
-  def searchBarSearchButtonClicked(search_bar)
-  #def searchBar(search_bar, textDidChange: searchText)
+  def searchBar(search_bar, textDidChange: searchText)
     searchText = search_bar.text
-    search_bar.resignFirstResponder
     navigationItem.title = "search results for '#{searchText}'"
     search_for(searchText)
+  end
+
+  def searchBarSearchButtonClicked(search_bar)
+    search_bar.resignFirstResponder
+  end
+
+  def searchBarCancelButtonClicked(search_bar)
+    search_bar.resignFirstResponder
     search_bar.text = ""
   end
 
