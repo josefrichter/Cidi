@@ -1,4 +1,4 @@
-class CitiesController < UIViewController
+class CitiesController < UITableViewController
 
   path = NSBundle.mainBundle.pathForResource("cidi_cities1000", ofType:"json")
   CITIES = BW::JSON.parse NSData.dataWithContentsOfFile(path)
@@ -7,17 +7,19 @@ class CitiesController < UIViewController
     super
     self.title = "Cities"
 
-    @table = UITableView.alloc.initWithFrame(self.view.bounds)
-    @table.autoresizingMask = UIViewAutoresizingFlexibleHeight
-    self.view.addSubview(@table)
+    search_bar = UISearchBar.alloc.initWithFrame([[0,0],[320,44]])
+    search_bar.delegate = self
+    search_bar.showsCancelButton = true
+    view.addSubview(search_bar)
+    view.tableHeaderView = search_bar
+    view.contentOffset = CGPointMake(0, 44) # hide the searchbar
 
-    @table.dataSource = self
-    @table.delegate = self
+    @search_results = CITIES
 
   end
 
   def tableView(tableView, numberOfRowsInSection:section)
-    CITIES.count
+    @search_results.to_a.length
   end
 
   def tableView(tableView, cellForRowAtIndexPath:indexPath)
@@ -30,13 +32,13 @@ class CitiesController < UIViewController
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator
 
     # put your data in the cell
-    cell.textLabel.text = CITIES[indexPath.row][:name]
+    cell.textLabel.text = @search_results[indexPath.row][:name]
     cell
   end
 
   def tableView(tableView, didSelectRowAtIndexPath:indexPath)
     tableView.deselectRowAtIndexPath(indexPath, animated:true)
-    city = CITIES[indexPath.row][:name]
+    city = @search_results[indexPath.row][:name]
 
     controller = UIViewController.alloc.initWithNibName(nil, bundle:nil)
     controller.view.backgroundColor = UIColor.whiteColor
@@ -50,8 +52,8 @@ class CitiesController < UIViewController
 
     # docs: https://github.com/rubymotion/BubbleWrap/blob/master/motion/location/location.rb
     BW::Location.get do |result|
-      lat = CITIES[indexPath.row][:lat]
-      lon = CITIES[indexPath.row][:lon]
+      lat = @search_results[indexPath.row][:lat]
+      lon = @search_results[indexPath.row][:lon]
       cityloc = CLLocation.alloc.initWithLatitude(lat, longitude:lon)
       dist = result[:to].distanceFromLocation(cityloc) / 1000 #km
       @label.text = dist.round.to_s
@@ -60,6 +62,29 @@ class CitiesController < UIViewController
 
     controller.view.addSubview(@label)
     self.navigationController.pushViewController(controller, animated:true)
+  end
+
+  def searchBar(search_bar, textDidChange: searchText)
+    searchText = search_bar.text
+    navigationItem.title = "search results for '#{searchText}'"
+    search_for(searchText)
+  end
+
+  def searchBarSearchButtonClicked(search_bar)
+    search_bar.resignFirstResponder
+  end
+
+  def searchBarCancelButtonClicked(search_bar)
+    search_bar.resignFirstResponder
+    view.contentOffset = CGPointMake(0, 44) # hide the searchbar
+    search_bar.text = ""
+    search_for("")
+  end
+
+  def search_for(text)
+    @search_results = CITIES
+    @search_results = @search_results.select {|c| c[:name].downcase.include? text.downcase }
+    view.reloadData
   end
 
 end
