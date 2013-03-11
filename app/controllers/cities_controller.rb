@@ -50,42 +50,16 @@ class CitiesController < UIViewController
 
     # docs: https://github.com/rubymotion/BubbleWrap/blob/master/motion/location/location.rb
     BW::Location.get do |result|
-      dist = distcalc(result[:to].latitude, result[:to].longitude, 
-        CITIES[indexPath.row][3], CITIES[indexPath.row][4])
-      p dist
-      @label.text = dist.to_s
+      lat = CITIES[indexPath.row][3]
+      lon = CITIES[indexPath.row][4]
+      cityloc = CLLocation.alloc.initWithLatitude(lat, longitude:lon)
+      dist = result[:to].distanceFromLocation(cityloc) / 1000 #km
+      @label.text = dist.round.to_s
       @label.sizeToFit
     end
 
     controller.view.addSubview(@label)
     self.navigationController.pushViewController(controller, animated:true)
-  end
-
-  def distcalc(lat1,lon1,lat2,lon2)
-    #p lat1, lon1, lat2, lon2
-    lat2 = todeg(lat2)
-    lon2 = todeg(lon2)
-    r = 6371; # km
-
-    dLat = torad(lat2-lat1)
-    dLon = torad(lon2-lon1)
-
-    lat1 = torad(lat1)
-    lat2 = torad(lat2)
-
-    a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2) 
-    c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) 
-    d = r * c
-    return d.round
-  end
-
-  def torad(deg)
-    deg * Math::PI / 180
-  end
-
-  def todeg(rad)
-    rad / Math::PI / 180
   end
 
 end
