@@ -30,13 +30,13 @@ class CitiesController < UIViewController
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator
 
     # put your data in the cell
-    cell.textLabel.text = CITIES[indexPath.row][1]
+    cell.textLabel.text = CITIES[indexPath.row][:name]
     cell
   end
 
   def tableView(tableView, didSelectRowAtIndexPath:indexPath)
     tableView.deselectRowAtIndexPath(indexPath, animated:true)
-    city = CITIES[indexPath.row][1]
+    city = CITIES[indexPath.row][:name]
 
     controller = UIViewController.alloc.initWithNibName(nil, bundle:nil)
     controller.view.backgroundColor = UIColor.whiteColor
@@ -50,8 +50,8 @@ class CitiesController < UIViewController
 
     # docs: https://github.com/rubymotion/BubbleWrap/blob/master/motion/location/location.rb
     BW::Location.get do |result|
-      lat = CITIES[indexPath.row][3]
-      lon = CITIES[indexPath.row][4]
+      lat = CITIES[indexPath.row][:lat]
+      lon = CITIES[indexPath.row][:lon]
       cityloc = CLLocation.alloc.initWithLatitude(lat, longitude:lon)
       dist = result[:to].distanceFromLocation(cityloc) / 1000 #km
       @label.text = dist.round.to_s
