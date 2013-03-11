@@ -1,4 +1,4 @@
-class CitiesController < UIViewController
+class CitiesController < UITableViewController
 
   path = NSBundle.mainBundle.pathForResource("cidi_cities1000", ofType:"json")
   CITIES = BW::JSON.parse NSData.dataWithContentsOfFile(path)
@@ -7,24 +7,17 @@ class CitiesController < UIViewController
     super
     self.title = "Cities"
 
-    @table = UITableView.alloc.initWithFrame(self.view.bounds)
-    @table.autoresizingMask = UIViewAutoresizingFlexibleHeight
-    self.view.addSubview(@table)
-
-    @table.dataSource = self
-    @table.delegate = self
-
     search_bar = UISearchBar.alloc.initWithFrame([[0,0],[320,44]])
     search_bar.delegate = self
-    @table.addSubview(search_bar)
-    #self.view.tableHeaderView = search_bar
+    view.addSubview(search_bar)
+    view.tableHeaderView = search_bar
 
     @search_results = CITIES
 
   end
 
   def tableView(tableView, numberOfRowsInSection:section)
-    @search_results.count
+    @search_results.to_a.length
   end
 
   def tableView(tableView, cellForRowAtIndexPath:indexPath)
@@ -71,7 +64,6 @@ class CitiesController < UIViewController
 
   def searchBarSearchButtonClicked(search_bar)
   #def searchBar(search_bar, textDidChange: searchText)
-    #@search_results.clear
     searchText = search_bar.text
     search_bar.resignFirstResponder
     navigationItem.title = "search results for '#{searchText}'"
@@ -81,9 +73,8 @@ class CitiesController < UIViewController
 
   def search_for(text)
     @search_results = CITIES
-    @search_results = @search_results.select {|c| c[:name].to_s.downcase.include? text.downcase }
-    p @search_results.count
-    @table.reloadData
+    @search_results = @search_results.select {|c| c[:name].downcase.include? text.downcase }
+    view.reloadData
   end
 
 end
