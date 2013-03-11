@@ -12,6 +12,7 @@ class CitiesController < UITableViewController
     search_bar.showsCancelButton = true
     view.addSubview(search_bar)
     view.tableHeaderView = search_bar
+    view.contentOffset = CGPointMake(0, 44) # hide the searchbar
 
     @search_results = CITIES
 
@@ -75,7 +76,9 @@ class CitiesController < UITableViewController
 
   def searchBarCancelButtonClicked(search_bar)
     search_bar.resignFirstResponder
+    view.contentOffset = CGPointMake(0, 44) # hide the searchbar
     search_bar.text = ""
+    search_for("")
   end
 
   def search_for(text)
